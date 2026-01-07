@@ -24,9 +24,9 @@ import matplotlib.pyplot as plt
 
 # Material & Geometry
 E   = 210e9     # Modulus
-rho = 7850
-L   = 2.0
-R   = 0.02
+rho = 7850      # Density
+L   = 2.0       # Length
+R   = 0.02      # Beam Radius
 
 A = np.pi * R**2        # Surface 
 I = np.pi * R**4/4.0    # Bending moment
@@ -94,5 +94,21 @@ omega_analytical = (1.875**2) * np.sqrt(E*I/(rho*A*L**4))
 print(f"ω1 FEM: {omega_numerical:.3f}")
 print(f"ω1 FEM: {omega_analytical:.3f}")
 
-# Check point
-print("Printing results")
+
+
+"""
+--------------------------------
+    Part 3: Dynamic Analysis
+--------------------------------
+"""
+
+# Input
+omega = 0.95*omega_numerical                                    # Given frequency
+force = lambda t: (np.eye(len(u))[-2] * P * np.sin(omega*t))    # Time-varying load
+
+# Initialise
+new_u0 = np.zeros_like(u)
+new_v0 = np.zeros_like(new_u0)
+
+# Newmark Integration
+new_t, new_uh, new_vh, new_ah = newmark(M_r, K_r, force, new_u0, new_v0, dt, t_end)
