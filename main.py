@@ -11,6 +11,8 @@ by: Michaela Alexandridi
 import numpy as np
 from assembler import assemble_global_matrices, apply_bc
 from static_solver import tip_load_vector, static_solver, analytical_solution
+from newmark import newmark, frequency_estimation
+import matplotlib.pyplot as plt
 
 
 """ 
@@ -57,3 +59,40 @@ wL_analytical, _ = analytical_solution(P, L, E, I)
 # Check results
 print(f"Static Tip Displacement FEM: {wL_numerical:.6e}")
 print(f"Static Tip Displacement FEM: {wL_analytical:.6e}")
+
+
+
+"""
+--------------------------------
+    Part 2: Free Vibration
+--------------------------------
+"""
+
+# Input Newmark data
+u0 = u
+v0 = np.zeros_like(u0)
+
+zero_force = lambda t: np.zeros_like(u0)
+
+dt = 1e-5
+t_end = 2.0
+
+# Newmark Integration
+t, uh, vh, ah = newmark(M_r, K_r, zero_force, u0, v0, dt, t_end)
+
+# Plot results
+plt.figure(figsize=(9,4))
+plt.plot(t,uh[:,-2])
+plt.xlabel("t")
+plt.ylabel("w(L)")
+plt.show()
+
+# Omega
+omega_numerical = frequency_estimation(t, uh[:,-2], min_height=0.0, min_distance=0.08)
+omega_analytical = (1.875**2) * np.sqrt(E*I/(rho*A*L**4))
+
+print(f"ω1 FEM: {omega_numerical:.3f}")
+print(f"ω1 FEM: {omega_analytical:.3f}")
+
+# Check point
+print("Printing results")
