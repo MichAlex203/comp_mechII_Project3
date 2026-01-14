@@ -106,10 +106,16 @@ print(f"ω1 ANA: {omega_analytical:.3f}")
 # Input
 P0 = 1e3
 omega = 0.95*omega_numerical                                      # Given frequency
+
+"""
+# A way for harmonic force
+
 force = lambda t: (np.eye(len(u0))[-2] * P0 * np.sin(omega*t))    # Time-varying load
 
 """
-B way for calculating harmonic force
+
+
+# B way for calculating harmonic force
     
 def force(t):
     f = np.zeros_like(u0)
@@ -117,7 +123,6 @@ def force(t):
     
     return f
 
-"""
 
 # Initialise
 new_u0 = np.zeros_like(u0)
