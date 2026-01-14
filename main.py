@@ -13,6 +13,7 @@ from assembler import assemble_global_matrices, apply_bc
 from static_solver import tip_load_vector, static_solver, analytical_solution
 from newmark import newmark, frequency_estimation
 import matplotlib.pyplot as plt
+from postprocessing import animate_beam
 
 
 """ 
@@ -32,7 +33,7 @@ A = np.pi * R**2        # Surface
 I = np.pi * R**4/4.0    # Bending moment
 
 # Input Data
-P = 1e3                 # Force
+P = -1e3                # Force
 n_elem = 8              # Number of elements
 
 
@@ -92,7 +93,7 @@ omega_numerical = frequency_estimation(t, uh[:,-2], min_height=0.0, min_distance
 omega_analytical = (1.875**2) * np.sqrt(E*I/(rho*A*L**4))
 
 print(f"ω1 FEM: {omega_numerical:.3f}")
-print(f"ω1 FEM: {omega_analytical:.3f}")
+print(f"ω1 ANA: {omega_analytical:.3f}")
 
 
 
@@ -103,12 +104,36 @@ print(f"ω1 FEM: {omega_analytical:.3f}")
 """
 
 # Input
-omega = 0.95*omega_numerical                                    # Given frequency
-force = lambda t: (np.eye(len(u))[-2] * P * np.sin(omega*t))    # Time-varying load
+P0 = 1e3
+omega = 0.95*omega_numerical                                      # Given frequency
+force = lambda t: (np.eye(len(u0))[-2] * P0 * np.sin(omega*t))    # Time-varying load
+
+"""
+B way for calculating harmonic force
+    
+def force(t):
+    f = np.zeros_like(u0)
+    f[-2] = P0*np.sin(omega*t)
+    
+    return f
+
+"""
 
 # Initialise
-new_u0 = np.zeros_like(u)
+new_u0 = np.zeros_like(u0)
 new_v0 = np.zeros_like(new_u0)
 
 # Newmark Integration
 new_t, new_uh, new_vh, new_ah = newmark(M_r, K_r, force, new_u0, new_v0, dt, t_end)
+
+# Create GIF file for u
+animate_beam(new_uh,
+             free_dofs=free,
+             n_elem=n_elem,
+             L=L,
+             time=t,
+             scale=55,
+             filename="semfebeam.gif",
+             fps0=30,
+             max_frames=150,
+             show=True)
